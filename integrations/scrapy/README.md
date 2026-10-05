@@ -113,6 +113,20 @@ through rayobrowse. The `books` spider is also available:
 scrapy crawl books -o books.json
 ```
 
+The example spiders support both Scrapy's `start_requests()` interface and the
+async `start()` interface added in Scrapy 2.13. They leave page ownership with
+`scrapy-playwright`, so pages are closed after each download, including failed
+navigation. Retain a page with `playwright_include_page` only when a callback
+needs the Playwright page, and provide cleanup for both callbacks and errbacks.
+
+### Test the examples
+
+From `example_project/`, run `python -m unittest discover -s tests -v`.
+Set `CHROMIUM_EXECUTABLE` to a local Chrome or Chromium executable to also run
+CDP tests with local fixtures. These check JavaScript rendering, pagination,
+and continued crawling after navigation and callback failures with one page slot.
+No rayobrowse service or remote site is needed for these tests.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |

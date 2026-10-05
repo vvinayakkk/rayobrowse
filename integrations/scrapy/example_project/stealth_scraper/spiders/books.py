@@ -23,15 +23,15 @@ class BooksSpider(scrapy.Spider):
         "CLOSESPIDER_ITEMCOUNT": 50,
     }
 
-    async def start(self):
+    def start_requests(self):
         for url in self.start_urls:
-            yield scrapy.Request(
-                url, meta={"playwright": True, "playwright_include_page": True}
-            )
+            yield scrapy.Request(url, meta={"playwright": True})
 
-    async def parse(self, response):
-        page = response.meta["playwright_page"]
+    async def start(self):
+        for request in self.start_requests():
+            yield request
 
+    def parse(self, response):
         for book in response.css("article.product_pod"):
             yield {
                 "title": book.css("h3 a::attr(title)").get(),
@@ -45,11 +45,8 @@ class BooksSpider(scrapy.Spider):
 
         next_page = response.css("li.next a::attr(href)").get()
         if next_page:
-            await page.close()
             yield response.follow(
                 next_page,
                 self.parse,
-                meta={"playwright": True, "playwright_include_page": True},
+                meta={"playwright": True},
             )
-        else:
-            await page.close()
